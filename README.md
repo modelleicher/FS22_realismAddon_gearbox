@@ -13,6 +13,10 @@ Currently this isn't compatible with VCA due to overwriting the same function. I
  
 # Changelog:
 
+###### V 0.5.1.0
+-- currentGearRatio set to 0 if in neutral, remove jerking when clutch is released in neutral
+-- added smoothing of acceleration value to stabilize rpm and load and lastAcceleratorPedal (not good.. better.. maybe? Now acc pedal reaction is slow)
+
 ###### V 0.5.0.0
 - Initial Github Release for FS22, 19th or April 2022 
 

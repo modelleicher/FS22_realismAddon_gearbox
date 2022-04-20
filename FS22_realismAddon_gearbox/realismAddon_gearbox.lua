@@ -29,6 +29,10 @@ VehicleMotor.getLastModulatedMotorRpm = Utils.overwrittenFunction(VehicleMotor.g
 -- check and override pto rpm stuff - done 
 -- stop running away when motor off - done 
 
+-- smaller fixes 
+-- currentGearRatio set to 0 if in neutral, remove jerking when clutch is released in neutral - done 
+-- added smoothing of acceleration value to stabilize rpm and load and lastAcceleratorPedal
+
 -- updateGear function seems to be the only one where clutch ratio has influence on gear ratio #M1 - yep, that solved it 
 
 -- things to add and consider	
@@ -71,17 +75,24 @@ function realismAddon_gearbox.calculateClutchRatio(self, motor)
 		currentGearRatio = math.min(currentGearRatio, 1000)
 	end
 	
-	-- smoothing maybe 
-	if motor.lastGearRatioME == nil then
-		motor.lastGearRatioME = currentGearRatio
-	end
-	motor.lastGearRatioME = motor.lastGearRatioME * 0.9 + currentGearRatio * 0.1
-	
 	-- get the wanted gear Ratio 
 	local wantedGearRatio = 0
 	if motor.currentGears[motor.gear] ~= nil then
 		wantedGearRatio = motor.currentGears[motor.gear].ratio * motor:getGearRatioMultiplier()
 	end	
+	
+	-- if we are in neutral currentGearRatio is set to 0 as well no matter what 
+	if wantedGearRatio == 0 then
+		currentGearRatio = 0
+	end
+	
+	
+	-- smoothing maybe 
+	if motor.lastGearRatioME == nil then
+		motor.lastGearRatioME = currentGearRatio
+	end
+	motor.lastGearRatioME = motor.lastGearRatioME * 0.9 + currentGearRatio * 0.1
+		
 	
 	-- :wantedGearRatio is now the signed wanted ratio 
 	
@@ -434,6 +445,12 @@ function realismAddon_gearbox.updateWheelsPhysics(self, superFunc, dt, currentSp
 			acceleration = 0
 		end
 		
+		-- smoothing acceleration (V 0.5.1.0 addition)
+		if motor.lastAccelerationME == nil then
+			motor.lastAccelerationME = acceleration
+		end
+		motor.lastAccelerationME = motor.lastAccelerationME * 0.9 + acceleration * 0.1
+		
 
 		-- set accelerationPedal desired value 
 		if acceleration > 0 then
@@ -465,6 +482,17 @@ function realismAddon_gearbox.updateWheelsPhysics(self, superFunc, dt, currentSp
 		
 		-- better clutch feel, new ratio calc 
 		realismAddon_gearbox.calculateClutchRatio(self, motor)
+		
+		
+		-- smoothing for lastAcceleratorPedal since the acceleratorPedal is on/off with my calculation, even with smoothing the load-changes are too fast (V 0.5.1.0 addition)
+		if motor.lastAcceleratorPedalME == nil then
+			motor.lastAcceleratorPedalME = motor.lastAcceleratorPedal
+		end
+		motor.lastAcceleratorPedalME = motor.lastAcceleratorPedalME * 0.9 + acceleratorPedal * 0.1
+		
+		motor.lastAcceleratorPedal = motor.lastAcceleratorPedalME
+		--
+		
 		
 		
 
