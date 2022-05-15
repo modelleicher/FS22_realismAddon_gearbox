@@ -5,6 +5,7 @@
     <title>
         <de>RealismAddon: Gearbox</de>
 		<en>RealismAddon: Gearbox</en>
+		<cz>RealismAddon: Převodovka</cz>
     </title>
     <description>
         <de>
@@ -13,6 +14,9 @@
 	<en>
 <![CDATA[RealismAddon: Gearbox]]>
 	</en>
+	<cz>
+<![CDATA[RealismAddon: Převodovka]]>
+	</cz>	
     </description>
 
 	<iconFilename>store.dds</iconFilename>
@@ -28,11 +32,11 @@
     </extraSourceFiles>
 	
 	<l10n>
-		<text name="input_RAGB_HANDTHROTTLE_UP"><de>Handgas erhöhen</de><en>hand throttle up</en></text>
-		<text name="input_RAGB_HANDTHROTTLE_DOWN"><de>Handgas verringern</de><en>hand throttle down</en></text>
-		<text name="input_RAGB_HANDTHROTTLE_AXIS"><de>Handgas Analoge Achse</de><en>hand throttle axis</en></text>
+		<text name="input_RAGB_HANDTHROTTLE_UP"><de>Handgas erhöhen</de><en>hand throttle up</en><cz>přidat ruční plyn</cz></text>
+		<text name="input_RAGB_HANDTHROTTLE_DOWN"><de>Handgas verringern</de><en>hand throttle down</en><cz>ubrat ruční plyn</cz></text>
+		<text name="input_RAGB_HANDTHROTTLE_AXIS"><de>Handgas Analoge Achse</de><en>hand throttle axis</en><cz>osa ručního plynu</cz></text>
 		
-		<text name="input_RAGB_GEARSHIFT_AXIS"><de>Analoge Schaltachse (FPS Getriebe)</de><en>analog shift axis (FPS transmissions)</en></text>
+		<text name="input_RAGB_GEARSHIFT_AXIS"><de>Analoge Schaltachse (FPS Getriebe)</de><en>analog shift axis (FPS transmissions)</en><cz>analogová osa řazení (převodovka FPS)</cz></text>
 	</l10n>
 	
 	<inputBinding>
