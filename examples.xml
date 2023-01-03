@@ -1,0 +1,46 @@
+
+
+
+<!-- RealismAddon Gearbox Examples.xml -->
+
+<!-- Second Group Set -->
+
+<!-- 
+The second group set is a second set of ranges/groups as in many tractors there isn't just one set of Groups.
+Giants didn't implement this due to their Transmissions need to work fully automatic for people who don't want to shift manually.
+So I did implement the second group set now - but of course it is just for shifting manually and not touched by the automatic.
+
+Below you see an example transmission - part of any tractor with the realismAddon_gearbox second group set added.
+
+- powerShift -> this attribute is set to true if the range is powershift-able. This means it can be shifted without clutch 
+- preselect -> this attribute is set to true if the range is of the preselect type. This means the range will be preselected with the button - but only shifts once you hit the clutch.
+				(This is for example used in the smaller MB-Tracs (700-900, 1000 - 1100) and probably some other vehicles too)
+- ratio -> just as with the default (first) group set its the ratio by which the speed is reduced. Usually one of the groups is 1 and the others
+			are lower. You can get this value if you calculate the speed in the range you want the value for divided by the speed in the range 
+			where the value is set to 1.
+- name -> optional, if left blank it will just be 1, 2, 3 etc. like with default groupts and gears. The name is displayed next to the default first group set
+- isDefault -> this attribute is set to true on the group that is engaged by default - e.g. the group it starts in.
+-->
+
+<transmission autoGearChangeTime="1" gearChangeTime="0.5" axleRatio="0.918" name="$l10n_info_transmission_manualWithPowerShiftGroups">
+	<directionChange useGear="false" useGroup="true" reverseGroupIndex="3" changeTime="0.5"/>
+	<groups type="DEFAULT" changeTime="0" >
+		<group ratio="0.404" name="I" />
+		<group ratio="1.000" name="II" />
+		<group ratio="-0.521" name="R" />						
+	</groups>
+
+	<forwardGear maxSpeed="8.88" />
+	<forwardGear maxSpeed="14.99" />
+	<forwardGear maxSpeed="24.28" />
+	<forwardGear maxSpeed="39.99" />
+
+	<!-- This part -->
+	<realismAddon_gearbox>
+		<groupsSecondSet powerShift="false" preselect="true" >
+			<group ratio="0.784" name="I" />
+			<group ratio="1" name="II" isDefault="true" />
+		</groupsSecondSet>
+	</realismAddon_gearbox>	
+	<!-- --------- -->
+</transmission>

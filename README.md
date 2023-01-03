@@ -4,14 +4,17 @@ The goal with this mod is to fix all the large and little problems realism playe
 As of right now this is a work in progress and BETA so don't get mad at me if some problem might arise. Anyways, we've played this on Multiplayer for several hours and in Singleplayer as well so all should be fine though smaller issues might still exist.
 If you have any issues or any improvement ideas please feel free to open a issue :)
 
-Currently this isn't compatible with VCA due to overwriting the same function. If you need 4WD and other features that VCA has you can use Enhanced Vehicle for now, but I hope I can work out a way to make it compatible to VCA.
- 
+
 
 # Credits
 - mainly me, Modelleicher
 - bases on Giants stuff 
  
 # Changelog:
+
+###### V 0.5.2.6
+- addition of second group set 
+- fixed compatability with automatic gears like in the default Valtra 
 
 ###### V 0.5.1.0
 -- currentGearRatio set to 0 if in neutral, remove jerking when clutch is released in neutral
@@ -22,7 +25,11 @@ Currently this isn't compatible with VCA due to overwriting the same function. I
 
 
 
-# Features of the initial Release V 0.5
+# Features:
+###### Features Update 0.5.2.6
+- addition of second group set (see examples.xml on how to implement it)
+
+###### Features of the initial release
 - displayed and sound-rpm is as close to the actual/physical rpm as possible, no fake rpm drop and lagging behind anymore 
 - clutch and engine rpm is matched if clutch is released
 - new clutch calculation that allows the clutch to actually slip, clutch feel of RMT is back 

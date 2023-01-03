@@ -23,7 +23,11 @@ function realismAddon_gearbox_inputs.onRegisterActionEvents(self, isActiveForInp
 			self:addRealismAddonActionEvent("PRESSED_OR_AXIS", "RAGB_HANDTHROTTLE_AXIS", "HANDTHROTTLE_INPUT")
 			
 			-- gear shift via axis 
-			self:addRealismAddonActionEvent("PRESSED_OR_AXIS", "RAGB_GEARSHIFT_AXIS", "RAGB_GEARSHIFT_AXIS");			
+			self:addRealismAddonActionEvent("PRESSED_OR_AXIS", "RAGB_GEARSHIFT_AXIS", "RAGB_GEARSHIFT_AXIS");	
+
+			-- second group set
+			self:addRealismAddonActionEvent("BUTTON_SINGLE_ACTION", "RAGB_GROUPSECOND_UP", "GROUPSECOND_INPUT")			
+			self:addRealismAddonActionEvent("BUTTON_SINGLE_ACTION", "RAGB_GROUPSECOND_DOWN", "GROUPSECOND_INPUT")			
 		
 		end
 
@@ -85,6 +89,27 @@ function realismAddon_gearbox_inputs:RAGB_GEARSHIFT_AXIS(actionName, inputValue)
 	
 end
 
+-- second group set 
+function realismAddon_gearbox_inputs:GROUPSECOND_INPUT(actionName, inputValue)
+
+	local spec_ragb = self.spec_realismAddon_gearbox
+	
+	if spec_ragb.groupsSecondSet ~= nil then	
+	
+		local wantedGroup = spec_ragb.groupsSecondSet.currentGroup
+		if actionName == "RAGB_GROUPSECOND_UP" then
+			wantedGroup = math.min(spec_ragb.groupsSecondSet.currentGroup + 1, #spec_ragb.groupsSecondSet.groups)
+		elseif actionName == "RAGB_GROUPSECOND_DOWN" then
+			wantedGroup = math.max(spec_ragb.groupsSecondSet.currentGroup - 1, 1)
+		end
+		
+		if wantedGroup ~= spec_ragb.groupsSecondSet.currentGroup then
+			self:processSecondGroupSetInputs(wantedGroup)
+		end
+	end
+
+end
+
 -- END
 
 
@@ -96,7 +121,11 @@ function realismAddon_gearbox_inputs.registerEventListeners(vehicleType)
 	SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", realismAddon_gearbox_inputs);
 	SpecializationUtil.registerEventListener(vehicleType, "onReadUpdateStream", realismAddon_gearbox_inputs);
 	
-	SpecializationUtil.registerEventListener(vehicleType, "onRegisterActionEvents", realismAddon_gearbox_inputs);	
+	SpecializationUtil.registerEventListener(vehicleType, "onRegisterActionEvents", realismAddon_gearbox_inputs);
+end
+
+function realismAddon_gearbox_inputs.registerFunctions(vehicleType)
+	
 end
 
 -- LOAD
@@ -117,9 +146,11 @@ function realismAddon_gearbox_inputs:onLoad(savegame)
 	spec.synchHandThrottleDirtyFlag = self:getNextDirtyFlag()	
 	
 	-- gear shift axis values 
-	spec.gearAxisPosition = 0;
+	spec.gearAxisPosition = 0;	
 	
 end
+
+
 
 -- UPDATE
 function realismAddon_gearbox_inputs:onUpdate(dt)
@@ -127,16 +158,15 @@ function realismAddon_gearbox_inputs:onUpdate(dt)
 	if self:getIsActive() then
 	
 		local spec = self.spec_realismAddon_gearbox_inputs	
-		
+	
 		-- check if transmission is manual 
-		local allManualActive = realismAddon_gearbox.checkIsManual(self.spec_motorized.motor)
+		local allManualActive = realismAddon_gearbox_overrides.checkIsManual(self.spec_motorized.motor)
 		if allManualActive ~= spec.allManualActive then
 			spec.allManualActive = allManualActive
 		end
 		
 		
-		if spec.allManualActive then	
-		
+		if spec.allManualActive then			
 			-- calculating hand throttle 
 			if spec.handThrottleDown then
 				spec.handThrottlePercent = math.max(0, spec.handThrottlePercent - 0.001*dt)
@@ -145,7 +175,7 @@ function realismAddon_gearbox_inputs:onUpdate(dt)
 				spec.handThrottlePercent = math.min(1, spec.handThrottlePercent + 0.001*dt)
 				self:raiseDirtyFlags(spec.synchHandThrottleDirtyFlag)				
 			end
-			
+
 		end
 			
 	end
@@ -178,6 +208,8 @@ function realismAddon_gearbox_inputs:onReadUpdateStream(streamId, timestamp, con
 	end
 	
 end;
+
+
 
 
 

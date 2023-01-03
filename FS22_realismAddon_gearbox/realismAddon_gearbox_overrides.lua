@@ -1,17 +1,17 @@
 -- by modelleicher ( Farming Agency )
 
 
-realismAddon_gearbox = {};
+realismAddon_gearbox_overrides = {};
 
 local MAX_ACCELERATION_LOAD = 0.8
 
 -- completely overwrite getLastModulatedMotorRpm to remove the RPM-lowering effect on load-changes. This seems to be done on purpose by Giants for whatever reason. 
 -- I don't think we need anything in that function so just return unmodified lastMotorRpm (to try, maybe return lastRealMotorRpm instead even) 
 -- this is active no matter what as soon as this script is active while other functions only activate when MANUAL + CLUTCH setting is active 
-function realismAddon_gearbox.newGetLastModulatedMotorRpm(self, superFunc)
+function realismAddon_gearbox_overrides.newGetLastModulatedMotorRpm(self, superFunc)
     return self.lastMotorRpm
 end
-VehicleMotor.getLastModulatedMotorRpm = Utils.overwrittenFunction(VehicleMotor.getLastModulatedMotorRpm, realismAddon_gearbox.newGetLastModulatedMotorRpm)
+VehicleMotor.getLastModulatedMotorRpm = Utils.overwrittenFunction(VehicleMotor.getLastModulatedMotorRpm, realismAddon_gearbox_overrides.newGetLastModulatedMotorRpm)
 
 
 -- gearbox adjustments - notes 
@@ -31,8 +31,7 @@ VehicleMotor.getLastModulatedMotorRpm = Utils.overwrittenFunction(VehicleMotor.g
 
 -- smaller fixes 
 -- currentGearRatio set to 0 if in neutral, remove jerking when clutch is released in neutral - done 
--- added smoothing of acceleration value to stabilize rpm and load and lastAcceleratorPedal
-
+-- added smoothing of acceleration value to stabilize rpm and load and lastAcceleratorPedal				 
 -- updateGear function seems to be the only one where clutch ratio has influence on gear ratio #M1 - yep, that solved it 
 
 -- things to add and consider	
@@ -42,9 +41,34 @@ VehicleMotor.getLastModulatedMotorRpm = Utils.overwrittenFunction(VehicleMotor.g
 
 -- notes end 
 
+-- second group set ratio calculation  
+function realismAddon_gearbox_overrides.getGearRatioMultiplier(self, superFunc)
+
+	
+	if realismAddon_gearbox_overrides.checkIsManual(self) then
+	
+		
+		local vehicle = self.vehicle
+		
+		local multiplier = superFunc(self)
+		--print(multiplier)
+		
+		local spec = vehicle.spec_realismAddon_gearbox
+		if spec ~= nil and spec.groupsSecondSet ~= nil and spec.groupsSecondSet.currentGroup ~= nil then
+			multiplier = multiplier / spec.groupsSecondSet.groups[spec.groupsSecondSet.currentGroup].ratio
+		end
+		--print(multiplier)
+		return multiplier
+	else
+		return superFunc(self)
+	end	
+
+end
+VehicleMotor.getGearRatioMultiplier = Utils.overwrittenFunction(VehicleMotor.getGearRatioMultiplier, realismAddon_gearbox_overrides.getGearRatioMultiplier)
+
 
 -- better clutch feel 
-function realismAddon_gearbox.calculateClutchRatio(self, motor)
+function realismAddon_gearbox_overrides.calculateClutchRatio(self, motor)
 	
 	-- the end of this function will determine the actual gear ratio 
 	local actualGearRatio = 0
@@ -84,15 +108,13 @@ function realismAddon_gearbox.calculateClutchRatio(self, motor)
 	-- if we are in neutral currentGearRatio is set to 0 as well no matter what 
 	if wantedGearRatio == 0 then
 		currentGearRatio = 0
-	end
-	
+	end	
 	
 	-- smoothing maybe 
 	if motor.lastGearRatioME == nil then
 		motor.lastGearRatioME = currentGearRatio
 	end
 	motor.lastGearRatioME = motor.lastGearRatioME * 0.9 + currentGearRatio * 0.1
-		
 	
 	-- :wantedGearRatio is now the signed wanted ratio 
 	
@@ -128,10 +150,9 @@ function realismAddon_gearbox.calculateClutchRatio(self, motor)
 end
 
 -- function to return if vehicle and settings are manual 
-function realismAddon_gearbox.checkIsManual(motor)
-	
+function realismAddon_gearbox_overrides.checkIsManual(motor)
 	local isManualTransmission = motor.backwardGears ~= nil or motor.forwardGears ~= nil
-	if isManualTransmission and VehicleMotor.SHIFT_MODE_MANUAL_CLUTCH then	
+	if isManualTransmission and motor.gearShiftMode == VehicleMotor.SHIFT_MODE_MANUAL_CLUTCH or motor.gearShiftMode == VehicleMotor.SHIFT_MODE_MANUAL then	
 		return true
 	else
 		return false
@@ -139,23 +160,24 @@ function realismAddon_gearbox.checkIsManual(motor)
 end
 
 -- remove ptoRpm to minRpm change 
-function realismAddon_gearbox.getRequiredMotorRpmRange(self, superFunc)
+function realismAddon_gearbox_overrides.getRequiredMotorRpmRange(self, superFunc)
 	
-	if realismAddon_gearbox.checkIsManual(self) then
+	if realismAddon_gearbox_overrides.checkIsManual(self) then
 		return self.minRpm, self.maxRpm
 	else
 		return superFunc(self)
 	end
 
 end
-VehicleMotor.getRequiredMotorRpmRange = Utils.overwrittenFunction(VehicleMotor.getRequiredMotorRpmRange, realismAddon_gearbox.getRequiredMotorRpmRange)
+VehicleMotor.getRequiredMotorRpmRange = Utils.overwrittenFunction(VehicleMotor.getRequiredMotorRpmRange, realismAddon_gearbox_overrides.getRequiredMotorRpmRange)
+
 
 -- VehicleMotor.update
-function realismAddon_gearbox.update(self, superFunc, dt)
+function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 
 
 	-- do our custom stuff only if we are in SHIFT_MODE_MANUAL_CLUTCH and in a vehicle with manual transmission
-	if realismAddon_gearbox.checkIsManual(self) then	
+	if realismAddon_gearbox_overrides.checkIsManual(self) then	
 		
 		local vehicle = self.vehicle
 		
@@ -222,8 +244,8 @@ function realismAddon_gearbox.update(self, superFunc, dt)
 			end
 			
 			-- take hand throttle into account -- TO DO
-			if vehicle.spec_realismAddon_gearbox_inputs ~= nil then	
-				accInput = math.max(accInput, vehicle.spec_realismAddon_gearbox_inputs.handThrottlePercent)
+			if vehicle.spec_realismAddon_gearbox_overrides_inputs ~= nil then	
+				accInput = math.max(accInput, vehicle.spec_realismAddon_gearbox_overrides_inputs.handThrottlePercent)
 			end
 			
 
@@ -361,6 +383,21 @@ function realismAddon_gearbox.update(self, superFunc, dt)
 
 			self.constantAccelerationCharge = 1 - math.min(math.abs(self.vehicle.lastSpeedAcceleration) * 1000 * 1000 / self.accelerationLimit, 1)
 
+			if (self.backwardGears or self.forwardGears) and self:getUseAutomaticGearShifting() then
+				if self.constantRpmCharge > 0.99 then
+					if self.maxRpm - clampedMotorRpm < 50 then
+						self.gearChangeTimeAutoReductionTimer = math.min(self.gearChangeTimeAutoReductionTimer + dt, self.gearChangeTimeAutoReductionTime)
+						self.gearChangeTime = self.gearChangeTimeOrig * (1 - self.gearChangeTimeAutoReductionTimer / self.gearChangeTimeAutoReductionTime)
+					else
+						self.gearChangeTimeAutoReductionTimer = 0
+						self.gearChangeTime = self.gearChangeTimeOrig
+					end
+				else
+					self.gearChangeTimeAutoReductionTimer = 0
+					self.gearChangeTime = self.gearChangeTimeOrig
+				end
+			end
+
 			if self.rawLoadPercentage > 0 then
 				self.rawLoadPercentage = self.rawLoadPercentage * MAX_ACCELERATION_LOAD + self.rawLoadPercentage * (1 - MAX_ACCELERATION_LOAD) * self.constantAccelerationCharge
 			end		
@@ -376,15 +413,15 @@ function realismAddon_gearbox.update(self, superFunc, dt)
 	end
 	
 end
-VehicleMotor.update = Utils.overwrittenFunction(VehicleMotor.update, realismAddon_gearbox.update)
+VehicleMotor.update = Utils.overwrittenFunction(VehicleMotor.update, realismAddon_gearbox_overrides.update)
 
 
 
-function realismAddon_gearbox.updateWheelsPhysics(self, superFunc, dt, currentSpeed, acceleration, doHandbrake, stopAndGoBraking)
+function realismAddon_gearbox_overrides.updateWheelsPhysics(self, superFunc, dt, currentSpeed, acceleration, doHandbrake, stopAndGoBraking)
 	
 
 	-- do our custom stuff only if we are in SHIFT_MODE_MANUAL_CLUTCH and in a vehicle with manual transmission
-	if realismAddon_gearbox.checkIsManual(self.spec_motorized.motor) then		
+	if realismAddon_gearbox_overrides.checkIsManual(self.spec_motorized.motor) then		
 	
 		local motor = self.spec_motorized.motor
 	
@@ -398,8 +435,8 @@ function realismAddon_gearbox.updateWheelsPhysics(self, superFunc, dt, currentSp
 		
 		--
 		local handThrottlePercent = 0
-		if self.spec_realismAddon_gearbox_inputs ~= nil then	
-			handThrottlePercent = self.spec_realismAddon_gearbox_inputs.handThrottlePercent
+		if self.spec_realismAddon_gearbox_overrides_inputs ~= nil then	
+			handThrottlePercent = self.spec_realismAddon_gearbox_overrides_inputs.handThrottlePercent
 		end		
 		--
 		
@@ -476,25 +513,46 @@ function realismAddon_gearbox.updateWheelsPhysics(self, superFunc, dt, currentSp
 			end
 		end
 		
+																
+		-- fix for automatic gear shifting in the new valtra tractors 
+		-- motor:updateGear does not auto shift in reverse when accelerationPedal is bigger than brakePedal 
+		
+		if not motor:getUseAutomaticGearShifting() then
+			acceleratorPedal, brakePedal = motor:updateGear(acceleratorPedal, brakePedal, dt)
+		else
+			-- auto acc pedal including direction 
+			local acceleratorPedalAuto = acceleratorPedal * motor.currentDirection
+			local brakePedalAuto = brakePedal
+			-- if acc pedal is below 0, acc is 0 and brake is absolute of acc 
+			if acceleratorPedalAuto < 0 then
+				acceleratorPedalAuto = 0
+				brakePedalAuto = math.abs(acceleratorPedal)				
+			end
+			-- call updateGear with modified acc and brake pedals 
+			local acceleratorPedalA, brakePedalA = motor:updateGear(acceleratorPedalAuto, brakePedalAuto, dt)	
+			
+			-- "fix" the return values to work with the rest of realismAddon_gearbox_overrides
+			if acceleratorPedalAuto < 0 then
+				acceleratorPedal = brakePedalA
+				brakePedalA = brakePedal
+			end
+		end
+		
+
 		-- #M1  -- in updateGear the current clutch ratio influences the current gear ratio 
-				-- also it seems to be only called here, so instead of overwriting the entire function I can just do a new ratio calculation here 
-		acceleratorPedal, brakePedal = motor:updateGear(acceleratorPedal, brakePedal, dt)
+				-- also it seems to be only called here, so instead of overwriting the entire function I can just do a new ratio calculation here 		
 		
 		-- better clutch feel, new ratio calc 
-		realismAddon_gearbox.calculateClutchRatio(self, motor)
-		
+		realismAddon_gearbox_overrides.calculateClutchRatio(self, motor)
 		
 		-- smoothing for lastAcceleratorPedal since the acceleratorPedal is on/off with my calculation, even with smoothing the load-changes are too fast (V 0.5.1.0 addition)
 		if motor.lastAcceleratorPedalME == nil then
-			motor.lastAcceleratorPedalME = motor.lastAcceleratorPedal
+			motor.lastAcceleratorPedalME = motor.lastAcceleratorPedal  
 		end
 		motor.lastAcceleratorPedalME = motor.lastAcceleratorPedalME * 0.9 + acceleratorPedal * 0.1
 		
-		motor.lastAcceleratorPedal = motor.lastAcceleratorPedalME
-		--
-		
-		
-		
+		motor.lastAcceleratorPedal = motor.lastAcceleratorPedalME												  
+							
 
 		SpecializationUtil.raiseEvent(self, "onVehiclePhysicsUpdate", acceleratorPedal, brakePedal, automaticBrake, currentSpeed)
 
@@ -539,5 +597,5 @@ function realismAddon_gearbox.updateWheelsPhysics(self, superFunc, dt, currentSp
 		superFunc(self, dt, currentSpeed, acceleration, doHandbrake, stopAndGoBraking)
 	end
 end
-WheelsUtil.updateWheelsPhysics = Utils.overwrittenFunction(WheelsUtil.updateWheelsPhysics, realismAddon_gearbox.updateWheelsPhysics)
+WheelsUtil.updateWheelsPhysics = Utils.overwrittenFunction(WheelsUtil.updateWheelsPhysics, realismAddon_gearbox_overrides.updateWheelsPhysics)
 
