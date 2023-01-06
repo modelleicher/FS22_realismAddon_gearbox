@@ -12,6 +12,9 @@ If you have any issues or any improvement ideas please feel free to open a issue
  
 # Changelog:
 
+###### V 0.5.2.7
+- fixed Error when in Manual with Auto Clutch and CVT vehicle :: realismAddon_gearbox_overrides.lua:104: attempt to index field 'currentGears' (a nil value) 
+
 ###### V 0.5.2.6
 - addition of second group set 
 - fixed compatability with automatic gears like in the default Valtra 

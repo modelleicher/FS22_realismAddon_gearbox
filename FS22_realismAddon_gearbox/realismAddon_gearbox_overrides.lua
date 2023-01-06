@@ -98,6 +98,8 @@ function realismAddon_gearbox_overrides.calculateClutchRatio(self, motor)
 	else
 		currentGearRatio = math.min(currentGearRatio, 1000)
 	end
+
+	print("calc clutch ratio call")
 	
 	-- get the wanted gear Ratio 
 	local wantedGearRatio = 0
@@ -151,8 +153,8 @@ end
 
 -- function to return if vehicle and settings are manual 
 function realismAddon_gearbox_overrides.checkIsManual(motor)
-	local isManualTransmission = motor.backwardGears ~= nil or motor.forwardGears ~= nil
-	if isManualTransmission and motor.gearShiftMode == VehicleMotor.SHIFT_MODE_MANUAL_CLUTCH or motor.gearShiftMode == VehicleMotor.SHIFT_MODE_MANUAL then	
+	local isManualTransmission = motor.backwardGears ~= nil or motor.forwardGears ~= nil	
+	if isManualTransmission and motor.gearShiftMode == VehicleMotor.SHIFT_MODE_MANUAL_CLUTCH or isManualTransmission and  motor.gearShiftMode == VehicleMotor.SHIFT_MODE_MANUAL then	
 		return true
 	else
 		return false
