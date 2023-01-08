@@ -98,8 +98,6 @@ function realismAddon_gearbox_overrides.calculateClutchRatio(self, motor)
 	else
 		currentGearRatio = math.min(currentGearRatio, 1000)
 	end
-
-	print("calc clutch ratio call")
 	
 	-- get the wanted gear Ratio 
 	local wantedGearRatio = 0
@@ -246,8 +244,8 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 			end
 			
 			-- take hand throttle into account -- TO DO
-			if vehicle.spec_realismAddon_gearbox_overrides_inputs ~= nil then	
-				accInput = math.max(accInput, vehicle.spec_realismAddon_gearbox_overrides_inputs.handThrottlePercent)
+			if vehicle.spec_realismAddon_gearbox_inputs ~= nil then	
+				accInput = math.max(accInput, vehicle.spec_realismAddon_gearbox_inputs.handThrottlePercent)
 			end
 			
 
@@ -437,8 +435,8 @@ function realismAddon_gearbox_overrides.updateWheelsPhysics(self, superFunc, dt,
 		
 		--
 		local handThrottlePercent = 0
-		if self.spec_realismAddon_gearbox_overrides_inputs ~= nil then	
-			handThrottlePercent = self.spec_realismAddon_gearbox_overrides_inputs.handThrottlePercent
+		if self.spec_realismAddon_gearbox_inputs ~= nil then	
+			handThrottlePercent = self.spec_realismAddon_gearbox_inputs.handThrottlePercent
 		end		
 		--
 		

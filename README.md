@@ -12,6 +12,10 @@ If you have any issues or any improvement ideas please feel free to open a issue
  
 # Changelog:
 
+###### V 0.5.2.8
+- removed debug print calculation clutch ratio 
+- fixed hand throttle not working 
+
 ###### V 0.5.2.7
 - fixed Error when in Manual with Auto Clutch and CVT vehicle :: realismAddon_gearbox_overrides.lua:104: attempt to index field 'currentGears' (a nil value) 
 
