@@ -12,6 +12,9 @@ If you have any issues or any improvement ideas please feel free to open a issue
  
 # Changelog:
 
+###### V 0.5.2.9
+- analog handthrottle axis multiplayer synch fixed 
+
 ###### V 0.5.2.8
 - removed debug print calculation clutch ratio 
 - fixed hand throttle not working 

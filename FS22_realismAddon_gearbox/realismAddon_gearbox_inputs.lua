@@ -13,9 +13,6 @@ function realismAddon_gearbox_inputs.onRegisterActionEvents(self, isActiveForInp
 	if self.isClient then
 		local spec = self.spec_realismAddon_gearbox_inputs
 		
-		spec.actionEvents = {}
-		self:clearActionEventsTable(spec.actionEvents) 
-
 		if isActiveForInputIgnoreSelection and spec.allManualActive then
 			-- hand throttle 
 			self:addRealismAddonActionEvent("PRESSED_OR_AXIS", "RAGB_HANDTHROTTLE_UP", "HANDTHROTTLE_INPUT")
@@ -36,6 +33,10 @@ end
 
 function realismAddon_gearbox_inputs:addRealismAddonActionEvent(type, inputAction, func, showHud)
 	local spec = self.spec_realismAddon_gearbox_inputs
+	
+	spec.actionEvents = {}
+	self:clearActionEventsTable(spec.actionEvents) 
+
 	local _, actionEventId = nil;
 	if type == "BUTTON_SINGLE_ACTION" then
 		_ , actionEventId = self:addActionEvent(spec.actionEvents, InputAction[inputAction], self, realismAddon_gearbox_inputs[func], false, true, false, true)
@@ -60,7 +61,12 @@ function realismAddon_gearbox_inputs:HANDTHROTTLE_INPUT(actionName, inputValue)
 	spec.handThrottleDown = false
 	spec.handThrottleUp = false	
 	if actionName == "RAGB_HANDTHROTTLE_AXIS" then
-		spec.handThrottlePercent = inputValue
+		-- round to 1% resolution should be fine enough (to not spam multiplayer synch)
+		inputValue = math.floor(inputValue * 100) / 100
+		if spec.handThrottlePercent ~= inputValue then
+			self:raiseDirtyFlags(spec.synchHandThrottleDirtyFlag)
+			spec.handThrottlePercent = inputValue
+		end
 	elseif actionName == "RAGB_HANDTHROTTLE_UP" and inputValue == 1 then
 		spec.handThrottleUp = true 
 	elseif actionName == "RAGB_HANDTHROTTLE_DOWN" and inputValue == 1 then
