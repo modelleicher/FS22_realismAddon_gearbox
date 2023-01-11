@@ -405,7 +405,13 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 		end
 
 		self:updateSmoothLoadPercentage(dt, self.rawLoadPercentage)	
-		
+
+
+		-- lastSmoothedClutchPedal is used for the clutch animation 
+		if self.lastSmoothedClutchPedal ~= nil then
+			local clutchPedal = self:getClutchPedal()
+			self.lastSmoothedClutchPedal = self.lastSmoothedClutchPedal * 0.9 + clutchPedal * 0.1
+		end
 		
 
 	else

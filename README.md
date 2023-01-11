@@ -12,6 +12,9 @@ If you have any issues or any improvement ideas please feel free to open a issue
  
 # Changelog:
 
+###### V 0.5.3.0
+- fixed clutch animation not working
+
 ###### V 0.5.2.9
 - analog handthrottle axis multiplayer synch fixed 
 
