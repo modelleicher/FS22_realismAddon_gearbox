@@ -327,8 +327,13 @@ function realismAddon_gearbox_overrides.update(self, superFunc, dt)
 			self.rawLoadPercentageBuffer = self.rawLoadPercentageBuffer + rawLoadPercentage
 			self.rawLoadPercentageBufferIndex = self.rawLoadPercentageBufferIndex + 1
 
-			if self.rawLoadPercentageBufferIndex >= 6 then
-				self.rawLoadPercentage = self.rawLoadPercentageBuffer / 6
+			local buffersize = 10
+			if self.rawLoadPercentage >= 0.5 then
+				buffersize = 2
+			end
+			
+			if self.rawLoadPercentageBufferIndex >= buffersize then
+				self.rawLoadPercentage = self.rawLoadPercentageBuffer / buffersize
 				self.rawLoadPercentageBuffer = 0
 				self.rawLoadPercentageBufferIndex = 0
 			end
